@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Điều Khiển Quản Trị</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <header class="mb-6 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+      <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-[0.32em] text-sky-300">Bảng Điều Khiển Flask</p>
+          <h1 class="mt-2 text-3xl font-semibold text-white">Công Cụ Quản Trị Sau Đăng Nhập</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+            Sử dụng phiên đăng nhập hiện tại để xem dữ liệu học tập và gửi thông báo hệ thống
+            tới từng người dùng trong Firebase.
+          </p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
+          <div class="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+            <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Người Dùng Hiện Tại</p>
+            <p class="mt-2 text-lg font-semibold text-white">{{ user.name or user.username }}</p>
+            <p class="text-sm text-slate-400">{{ user.username }}</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+            <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Miền Trường Học</p>
+            <p class="mt-2 text-lg font-semibold text-white">{{ user.domain }}</p>
+            <a href="/logout"
+              class="mt-3 inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-400">
+              Đăng xuất
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid gap-6 xl:grid-cols-[1fr_550px]">
+      <section class="space-y-6">
+        <div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Công Cụ Học Vụ</p>
+              <h2 class="mt-2 text-xl font-semibold text-white">Thao Tác Theo Phiên Đăng Nhập</h2>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-4 md:grid-cols-2">
+            <button id="fetchScheduleBtn"
+              class="group rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-5 text-left transition hover:border-cyan-300/60 hover:bg-cyan-500/20">
+              <p class="text-sm font-medium text-cyan-300">Lấy Thời Khóa Biểu</p>
+              <p class="mt-2 text-sm text-slate-300">Gọi `/schedule` bằng phiên đăng nhập hiện tại.</p>
+            </button>
+
+            <button id="fetchMarksBtn"
+              class="group rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/10 p-5 text-left transition hover:border-fuchsia-300/60 hover:bg-fuchsia-500/20">
+              <p class="text-sm font-medium text-fuchsia-300">Lấy Điểm Sinh Viên</p>
+              <p class="mt-2 text-sm text-slate-300">Gọi `/student_marks` bằng phiên đăng nhập hiện tại.</p>
+            </button>
+
+            <a href="/ai-chat"
+              class="group rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5 text-left transition hover:border-emerald-300/60 hover:bg-emerald-500/20">
+              <p class="text-sm font-medium text-emerald-300">Trợ lý học tập AI</p>
+              <p class="mt-2 text-sm text-slate-300">Trò chuyện trực tiếp với AI Qwen2.5:3b.</p>
+            </a>
+          </div>
+        </div>
+
+        <div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div class="flex flex-col gap-4 md:flex-row">
+            <div class="flex-1">
+              <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Người Dùng Firebase</p>
+              <h2 class="mt-2 text-xl font-semibold text-white">Chọn Người Nhận</h2>
+            </div>
+
+            <div class="flex-1">
+              <label for="userSearch" class="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                Tìm theo tên hoặc msv
+              </label>
+              <input id="userSearch" type="text" placeholder="Tìm kiếm..."
+                class="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none focus:border-sky-400">
+            </div>
+          </div>
+
+          <div id="selectedUserCard" class="mt-5 hidden rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+            <p class="text-xs uppercase tracking-[0.24em] text-emerald-300">Người Dùng Đã Chọn</p>
+            <p id="selectedUserName" class="mt-2 text-lg font-semibold text-white"></p>
+            <p id="selectedUserMeta" class="text-sm text-slate-300"></p>
+          </div>
+
+          <div id="usersGrid" class="mt-5 grid max-h-[420px] gap-3 overflow-auto pr-1 sm:grid-cols-2"></div>
+        </div>
+      </section>
+
+      <aside class="space-y-6">
+        <div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Thông Báo Hệ Thống</p>
+          <h2 class="mt-2 text-xl font-semibold text-white">Gửi Thông Báo Cho Từng Người Dùng</h2>
+
+          <form id="notificationForm" class="mt-5 space-y-4">
+            <div>
+              <label for="studentId" class="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                Mã sinh viên
+              </label>
+              <input id="studentId" name="studentId" type="text" placeholder="Chọn từ danh sách hoặc nhập thủ công"
+                class="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none focus:border-sky-400">
+            </div>
+
+            <div>
+              <label for="notificationTitle"
+                class="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                Tiêu đề
+              </label>
+              <input id="notificationTitle" name="title" type="text" placeholder="Ví dụ: Bảo trì hệ thống"
+                class="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none focus:border-sky-400">
+            </div>
+
+            <div>
+              <label for="notificationBody"
+                class="mb-2 block text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                Nội dung
+              </label>
+              <textarea id="notificationBody" name="body" rows="6"
+                placeholder="Nhập nội dung thông báo hiển thị trong ứng dụng."
+                class="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none focus:border-sky-400"></textarea>
+            </div>
+
+            <button type="submit"
+              class="inline-flex w-full items-center justify-center rounded-2xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400">
+              Gửi thông báo
+            </button>
+          </form>
+        </div>
+
+        <div class="rounded-3xl border border-white/10 bg-slate-900/80 p-6">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Bảng Phản Hồi</p>
+              <h2 class="mt-2 text-lg font-semibold text-white">Kết Quả API</h2>
+            </div>
+            <button id="clearOutputBtn"
+              class="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-slate-300 transition hover:border-white/30 hover:text-white">
+              Xóa
+            </button>
+          </div>
+
+          <pre id="apiOutput"
+            class="mt-4 min-h-[420px] overflow-auto rounded-2xl bg-black/40 p-4 text-xs leading-6 text-emerald-300">Sẵn sàng.</pre>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- App Configuration (Data passed from server) -->
+  <div id="app-config" 
+       data-username="{{ user.username }}" 
+       data-password="{{ user.password }}"
+       data-domain="{{ user.domain }}" 
+       style="display: none;">
+  </div>
+
+  <!-- External Dashboard Logic -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+
+</html>
