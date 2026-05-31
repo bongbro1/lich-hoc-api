@@ -23,16 +23,25 @@ class FirebaseAdminService:
                 "Missing dependency 'firebase-admin'. Run 'pip install -r requirements.txt' in lich-hoc-api."
             ) from exc
 
-        service_account_path = Path(__file__).resolve().parent / "serviceAccount.json"
-        if not service_account_path.exists():
-            raise RuntimeError(f"Missing Firebase service account at: {service_account_path}")
-
         try:
             app = firebase_admin.get_app()
         except ValueError:
-            app = firebase_admin.initialize_app(
-                credentials.Certificate(str(service_account_path))
-            )
+            import os, json
+            firebase_creds_env = os.environ.get("FIREBASE_CREDENTIALS")
+            
+            if firebase_creds_env:
+                try:
+                    cred_dict = json.loads(firebase_creds_env)
+                    cred = credentials.Certificate(cred_dict)
+                except json.JSONDecodeError:
+                    raise RuntimeError("FIREBASE_CREDENTIALS env var is not a valid JSON string.")
+            else:
+                service_account_path = Path(__file__).resolve().parent / "serviceAccount.json"
+                if not service_account_path.exists():
+                    raise RuntimeError(f"Missing Firebase service account at: {service_account_path} and FIREBASE_CREDENTIALS env var is not set.")
+                cred = credentials.Certificate(str(service_account_path))
+                
+            app = firebase_admin.initialize_app(cred)
 
         self._db = firestore.client(app)
         self._messaging = messaging

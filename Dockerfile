@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Mở port cho Flask
-EXPOSE 5000
+EXPOSE $PORT
 
-# Chạy ứng dụng bằng Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--timeout", "120"]
+# Chạy ứng dụng bằng Gunicorn với biến PORT tự động của Render
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} app:app --timeout 120"]
